@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Romantic Countdown with Fireworks</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            margin: 0;
+            overflow: hidden;
+            background: linear-gradient(#0007, #0000), #123; /* Dark background matching fireworks */
+            color: #fff;
+            display: flex;
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically */
+            height: 100vh; /* Full viewport height */
+            position: relative; /* Required to position the fireworks */
+        }
+
+        /* Fireworks CSS */
+        @keyframes firework {
+            0% {
+                transform: translate(var(--x), var(--initialY));
+                width: var(--initialSize);
+                opacity: 1;
+            }
+            50% {
+                width: 0.5vmin;
+                opacity: 1;
+            }
+            100% {
+                width: var(--finalSize);
+                opacity: 0;
+            }
+        }
+
+        .firework,
+        .firework::before,
+        .firework::after {
+            --initialSize: 0.5vmin;
+            --finalSize: 45vmin;
+            --particleSize: 0.2vmin;
+            --color1: yellow;
+            --color2: khaki;
+            --color3: white;
+            --color4: lime;
+            --color5: gold;
+            --color6: mediumseagreen;
+            --y: -30vmin;
+            --x: -50%;
+            --initialY: 60vmin;
+            content: "";
+            animation: firework 2s infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, var(--y));
+            width: var(--initialSize);
+            aspect-ratio: 1;
+            background: 
+                radial-gradient(circle, var(--color1) var(--particleSize), #0000 0) 50% 0%,
+                radial-gradient(circle, var(--color2) var(--particleSize), #0000 0) 100% 50%,
+                radial-gradient(circle, var(--color3) var(--particleSize), #0000 0) 50% 100%,
+                radial-gradient(circle, var(--color4) var(--particleSize), #0000 0) 0% 50%,
+                radial-gradient(circle, var(--color5) var(--particleSize), #0000 0) 80% 90%,
+                radial-gradient(circle, var(--color6) var(--particleSize), #0000 0) 95% 90%;
+            background-size: var(--initialSize) var(--initialSize);
+            background-repeat: no-repeat;
+        }
+
+        .firework::before,
+        .firework::after {
+            --x: -50%;
+            --y: -50%;
+            --initialY: -50%;
+            transform: translate(-50%, -50%) rotate(40deg) scale(1.3) rotateY(40deg);
+        }
+
+        .firework:nth-child(2) {
+            --x: 30vmin;
+        }
+
+        .firework:nth-child(2),
+        .firework:nth-child(2)::before,
+        .firework:nth-child(2)::after {
+            --color1: pink;
+            --color2: violet;
+            --color3: fuchsia;
+            --color4: orchid;
+            --color5: plum;
+            --color6: lavender;
+            --finalSize: 40vmin;
+            left: 30%;
+            top: 60%;
+            animation-delay: -0.25s;
+        }
+
+        .firework:nth-child(3) {
+            --x: -30vmin;
+            --y: -50vmin;
+        }
+
+        .firework:nth-child(3),
+        .firework:nth-child(3)::before,
+        .firework:nth-child(3)::after {
+            --color1: cyan;
+            --color2: lightcyan;
+            --color3: lightblue;
+            --color4: PaleTurquoise;
+            --color5: SkyBlue;
+            --color6: lavender;
+            --finalSize: 35vmin;
+            left: 70%;
+            top: 60%;
+            animation-delay: -0.4s;
+        }
+
+        /* Positioning the fireworks along the left and right edges */
+        .firework-left, .firework-right {
+            position: fixed;
+            top: 50%; /* Vertically center */
+            transform: translateY(-100%); /* Adjust for centering */
+            z-index: 10;
+        }
+
+        .firework-left {
+            left: 0;
+        }
+
+        .firework-right {
+            right: 0;
+        }
+
+
+        /* Slideshow CSS */
+        #slideshow-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        #slideshow-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Ensure the image fits without zooming */
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        #slideshow-container img.active {
+            opacity: 1;
+        }
+
+        #message {
+            font-size: 20px;
+            background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent black background */
+            padding: 20px;
+            border-radius: 10px; /* Optional: Add rounded corners */
+            color: #fff; /* Ensure the text remains white for visibility */
+            display: inline-block; /* Make the background wrap tightly around the text */
+        }
+
+        #countdown {
+            font-size: 24px;
+            margin-top: 20px;
+            color: #ff9aa2;
+        }
+
+        #video-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            background-color: rgba(0, 0, 0, 0.8); /* Add a semi-transparent background */
+        }
+
+        #main-video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Ensure video fits within the screen */
+        }
+
+        h1 {
+            font-size: 36px;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <!-- Firework Elements on Left and Right Borders -->
+    <div class="firework-left">
+        <div class="firework"></div>        
+        <div class="firework"></div>
+        <div class="firework"></div>
+        <div class="firework"></div>
+        <div class="firework"></div>
+        <div class="firework"></div>
+        <div class="firework"></div>
+        <div class="firework"></div>
+        <div class="firework"></div>
+    </div>
+
+    <div class="firework-right">
+        <div class="firework"></div>
+        <div class="firework"></div>
+        <div class="firework"></div>
+        <div class="firework"></div>
+        <div class="firework"></div>
+        <div class="firework"></div>
+        <div class="firework"></div>
+        <div class="firework"></div>
+        <div class="firework"></div>
+    </div>
+
+    <!-- Slideshow Background -->
+    <div id="slideshow-container">
+        <img src="Imagesfinal/1fc99dfe-f386-4b40-9fd8-fd1c3cd21606.JPG" alt="Image 1" class="active">
+        <img src="Imagesfinal/3ae0dbcc-1048-4f26-b100-92b9d9c10014.JPG" alt="Image 2">
+        <img src="Imagesfinal/4d1597c3-4337-4d20-b562-69353d66fce8.JPG" alt="Image 3">
+        <img src="Imagesfinal/6d45dd51-5392-4e27-bd80-4350712c3cf3.JPG" alt="Image 4">
+        <img src="Imagesfinal/8bf54895-e239-447b-9c97-8285e8b6aad4.JPG" alt="Image 5">
+        <img src="Imagesfinal/9D7FC56E-CD59-457A-9A06-A136788BE415.JPG" alt="Image 7">
+        <img src="Imagesfinal/57aa84cc-d2f6-436a-b24a-91ee0f7aae6a.JPG" alt="Image 8">
+        <img src="Imagesfinal/65baa6b6-e7bc-445a-a513-324fbbe506db.JPG" alt="Image 9">
+        <img src="Imagesfinal/97ca1ae0-a0da-4e6e-b685-35f1a3bb2afd.JPG" alt="Image 10">
+        <img src="Imagesfinal/3292bf84-21ad-4baf-ac09-691f262838e5.JPG" alt="Image 11">
+        <img src="Imagesfinal/171129aa-92cb-4657-a1c4-47c712f14fab.JPG" alt="Image 13">
+        <img src="Imagesfinal/54491647-1238-482d-8a1c-de6d50cba57d.JPG" alt="Image 14">
+        <img src="Imagesfinal/a80cdbde-48f2-4fed-a20f-b022a1dbf5c6.JPG" alt="Image 15">
+        <img src="Imagesfinal/b1d706db-09e0-4543-bbee-7bc93bd558bb.JPG" alt="Image 16">
+        <img src="Imagesfinal/b39598ab-39ad-4cd0-a930-355d5dcfb11b.JPG" alt="Image 17">
+        <img src="Imagesfinal/c9e6a5d9-0ce3-45b0-8056-5268d74d31c6.JPG" alt="Image 18">
+        <img src="Imagesfinal/d08087df-4866-4144-8fa5-9db48c151469.JPG" alt="Image 20">
+        <img src="Imagesfinal/e3c310c7-5f84-44a4-896d-eed3ee5950cc.JPG" alt="Image 21">
+        <img src="Imagesfinal/e631ec0a-f0e0-4b21-ace2-26f88adc3623.JPG" alt="Image 22">
+        <img src="Imagesfinal/e3658a9f-e831-4a0b-9b10-7ec156300562.JPG" alt="Image 23">
+        <img src="Imagesfinal/f062fbcd-c717-4256-bce6-22f37a2fd6ae.JPG" alt="Image 24">
+        <img src="Imagesfinal/IMG_0159.jpg" alt="Image 25">
+        <img src="Imagesfinal/IMG_0160.jpg" alt="Image 26">
+        <img src="Imagesfinal/IMG_1256.jpg" alt="Image 28">
+        <img src="Imagesfinal/IMG_1344.jpg" alt="Image 29">
+        <img src="Imagesfinal/IMG_2501.jpg" alt="Image 37">
+        <img src="Imagesfinal/IMG_2502.jpg" alt="Image 38">
+        <img src="Imagesfinal/IMG_2572.jpg" alt="Image 39">
+        <img src="Imagesfinal/IMG_2577.jpg" alt="Image 40">
+        <img src="Imagesfinal/IMG_2580.jpg" alt="Image 43">
+        <img src="Imagesfinal/IMG_2581.jpg" alt="Image 44">
+        <img src="Imagesfinal/IMG_2773.jpg" alt="Image 46">
+        <img src="Imagesfinal/IMG_3115.JPG" alt="Image 48">
+        <img src="Imagesfinal/IMG_3116.JPG" alt="Image 49">
+        <img src="Imagesfinal/IMG_3121.JPG" alt="Image 50">
+        <img src="Imagesfinal/IMG_3122.JPG" alt="Image 51">
+    </div>
+
+    <!-- Countdown and Message -->
+    <div id="message" style="font-size: 16px; max-width: 80%; padding: 15px; background-color: rgba(0, 0, 0, 0.6); border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);">
+        <h1 style="font-size: 36px; margin-bottom: 15px;">Hi Jayani!! ❤️</h1>
+        <p style="font-size: 18px; font-style: italic; margin-bottom: 10px; line-height: 1.4;">
+            Every moment with you is a treasure. 💎
+        </p>
+        <p style="font-size: 28px; font-weight: bold; color: #ffcc00; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); margin-bottom: 15px;">
+            HAPPY NEW YEAR 🎉
+        </p>
+        <p id="countdown" style="font-size: 20px; color: #ff9aa2; background: rgba(255, 255, 255, 0.2); padding: 8px 16px; border-radius: 8px; box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);">
+            <!-- Countdown timer will be injected here -->
+        </p>
+        <p style="font-size: 16px; color: #ffa07a; margin-top: 10px;">
+            Wait for the countdown to end for a cute video! 🎥💕
+        </p>
+    </div>
+    
+    
+
+    <!-- Video Container -->
+    <div id="video-container">
+        <video id="main-video" controls>
+            <source src="videos/WhatsApp Video 2024-12-31 at 14.38.29_a7ccf67e.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+
+    <script>
+        // Slideshow Logic
+        const slides = document.querySelectorAll('#slideshow-container img');
+        let currentIndex = 0;
+
+        function showNextSlide() {
+            slides[currentIndex].classList.remove('active');
+            currentIndex = (currentIndex + 1) % slides.length;
+            slides[currentIndex].classList.add('active');
+        }
+
+        // Change slides every 2 seconds
+        setInterval(showNextSlide, 2000);
+
+        // Countdown Logic
+        function startCountdown() {
+            const targetHour = 23; // Set your desired hour
+            const targetMinute = 59; // Set your desired minute
+            const targetSecond = 30; // Set your desired second
+
+            function updateCountdown() {
+                const now = new Date();
+                const targetTime = new Date();
+
+                targetTime.setHours(targetHour, targetMinute, targetSecond, 0);
+                if (now > targetTime) {
+                    targetTime.setDate(now.getDate() + 1);
+                }
+
+                const timeDifference = targetTime - now;
+
+                const hours = Math.floor((timeDifference / (1000 * 60 * 60)) % 24);
+                const minutes = Math.floor((timeDifference / (1000 * 60)) % 60);
+                const seconds = Math.floor((timeDifference / 1000) % 60);
+
+                const countdownElement = document.getElementById("countdown");
+                countdownElement.textContent = `${hours}h ${minutes}m ${seconds}s`; // Fixed this line
+
+                // At target time, show the video without autoplay
+                if (hours === 0 && minutes === 0 && seconds === 0) {
+                    const videoContainer = document.getElementById("video-container");
+                    const messageContainer = document.getElementById("message");
+
+                    videoContainer.style.display = "block";
+                    messageContainer.style.display = "none";
+                }
+            }
+
+            // Update the countdown immediately and every second
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+        }
+
+        startCountdown();
+    </script>
+</body>
+</html>
